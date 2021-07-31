@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit
+        bootstrap="vendor/autoload.php"
+        colors="true"
+        cacheResult="false"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>./Tests/Unit</directory>
+        </testsuite>
+        <testsuite name="PHPT">
+            <directory suffix=".phpt">./Tests/PHPT</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

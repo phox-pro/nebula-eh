@@ -1,0 +1,28 @@
+{
+  "name": "phox-pro/nebula-eh",
+  "description": "Exceptions handler for Nebula",
+  "type": "library",
+  "authors": [
+    {
+      "name": "hullabaloooooooo",
+      "email": "hullabaloo@phox.pro"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Phox\\Nebula\\EH\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "Tests/"
+    }
+  },
+  "require": {
+    "php": "^8.0",
+    "phox-pro/nebula-atom": "^0.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  }
+}
