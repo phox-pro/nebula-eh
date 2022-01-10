@@ -6,17 +6,18 @@ use Phox\Nebula\Atom\Implementation\Functions;
 use Phox\Nebula\Atom\Notion\Abstracts\Provider;
 use Phox\Nebula\Atom\Notion\Interfaces\IDependencyInjection;
 use Phox\Nebula\EH\Implementation\ExceptionHandler;
+use Phox\Nebula\EH\Notion\Interfaces\IExceptionHandler;
 use Throwable;
 
 class ExceptionHandlerProvider extends Provider
 {
     public function __invoke(IDependencyInjection $dependencyInjection): void
     {
-        $dependencyInjection->singleton(new ExceptionHandler());
+        $dependencyInjection->singleton(ExceptionHandler::class, IExceptionHandler::class);
 
-        set_exception_handler(function (Throwable $throwable) {
-            $container = Functions::container();
-            $handler = $container->get(ExceptionHandler::class);
+        set_exception_handler(function (Throwable $throwable) use ($dependencyInjection) {
+            $container = $dependencyInjection->get(IDependencyInjection::class);
+            $handler = $container->get(IExceptionHandler::class);
 
             $container->call([$handler, 'execute'], [$throwable]);
         });
