@@ -1,8 +1,7 @@
-version: '3'
-
+version: "3"
 services:
-  lib:
+  php-cli:
     image: phoxpro/lib
     tty: true
     volumes:
-      - './:/home/lib/'
+      - ./:/app

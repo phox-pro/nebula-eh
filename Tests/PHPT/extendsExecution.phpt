@@ -6,9 +6,9 @@ ExceptionHandler::execute test with subclasses
     require_once 'vendor/autoload.php';
 
     $nebula = new \Phox\Nebula\Atom\Implementation\Application();
-    $dependencyContainer = $nebula->getDIContainer();
-    $providersContainer = $dependencyContainer->get(\Phox\Nebula\Atom\Implementation\ProvidersContainer::class);
-    $providersContainer->addProvider(new \Phox\Nebula\EH\ExceptionHandlerProvider());
+    $dependencyContainer = \Phox\Nebula\Atom\Implementation\Services\ServiceContainerFacade::instance();
+
+    $nebula->run();
 
     $handler = $dependencyContainer
         ->get(\Phox\Nebula\EH\Notion\Interfaces\IExceptionHandler::class);

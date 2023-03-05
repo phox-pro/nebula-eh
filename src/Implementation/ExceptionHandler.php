@@ -2,12 +2,9 @@
 
 namespace Phox\Nebula\EH\Implementation;
 
-use Phox\Nebula\Atom\Notion\Abstracts\Event;
-use Phox\Nebula\Atom\Notion\Interfaces\IDependencyInjection;
 use Phox\Nebula\EH\Notion\Interfaces\IExceptionHandler;
 use Phox\Structures\Abstracts\ObjectType;
 use Phox\Structures\Abstracts\Type;
-use Phox\Structures\AssociativeCollection;
 use Phox\Structures\AssociativeObjectCollection;
 use Phox\Structures\Collection;
 use Throwable;
@@ -19,7 +16,7 @@ class ExceptionHandler implements IExceptionHandler
      */
     protected AssociativeObjectCollection $handlers;
 
-    public function __construct(protected IDependencyInjection $dependencyInjection)
+    public function __construct()
     {
         $this->handlers = new AssociativeObjectCollection(
             ObjectType::fromClass(Collection::class)
@@ -43,7 +40,7 @@ class ExceptionHandler implements IExceptionHandler
         }
 
         foreach ($exceptionListeners as $exceptionListener) {
-            $this->dependencyInjection->call($exceptionListener, [$throwable]);
+            call_user_func_array($exceptionListener, [$throwable]);
         }
     }
 
