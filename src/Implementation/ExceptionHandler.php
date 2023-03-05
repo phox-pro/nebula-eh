@@ -2,52 +2,61 @@
 
 namespace Phox\Nebula\EH\Implementation;
 
-use Phox\Nebula\Atom\Implementation\Functions;
-use Phox\Nebula\Atom\Notion\Abstracts\Event;
-use Phox\Nebula\Atom\Notion\Interfaces\IDependencyInjection;
+use Phox\Nebula\EH\Notion\Interfaces\IExceptionHandler;
+use Phox\Structures\Abstracts\ObjectType;
+use Phox\Structures\Abstracts\Type;
+use Phox\Structures\AssociativeObjectCollection;
 use Phox\Structures\Collection;
 use Throwable;
 
-class ExceptionHandler extends Event
+class ExceptionHandler implements IExceptionHandler
 {
-    protected Collection $listeners;
-    protected IDependencyInjection $dependencyInjection;
+    /**
+     * @var AssociativeObjectCollection<Collection<callable>>
+     */
+    protected AssociativeObjectCollection $handlers;
 
     public function __construct()
     {
-        parent::__construct();
+        $this->handlers = new AssociativeObjectCollection(
+            ObjectType::fromClass(Collection::class)
+        );
 
-        $this->listeners = new Collection(Collection::class);
-        $this->listeners->set(Throwable::class, new Collection('callable'));
-
-        $this->dependencyInjection = Functions::container()->get(IDependencyInjection::class);
+        $this->handlers->set(Throwable::class, new Collection(Type::CALLABLE));
     }
 
-    public function execute(Throwable $throwable)
+    public function execute(Throwable $throwable): void
     {
-        $needKeys = array_filter($this->listeners->getKeys(), fn(string $key): bool => is_subclass_of($throwable, $key));
+        $needKeys = array_filter($this->handlers->getKeys(), fn(string $key): bool => is_subclass_of($throwable, $key));
 
-        if ($this->listeners->has($throwable::class) && !in_array($throwable::class, $needKeys)) {
+        if ($this->handlers->has($throwable::class) && !in_array($throwable::class, $needKeys)) {
             array_unshift($needKeys, $throwable::class);
         }
 
-        $exceptionListeners = new Collection('callable');
+        $exceptionListeners = new Collection(Type::CALLABLE);
 
         foreach ($needKeys as $needKey) {
-            $exceptionListeners->merge($this->listeners->get($needKey)->all());
+            $exceptionListeners->merge($this->handlers->get($needKey)->getItems());
         }
 
         foreach ($exceptionListeners as $exceptionListener) {
-            $this->dependencyInjection->call($exceptionListener, [$throwable]);
+            call_user_func_array($exceptionListener, [$throwable]);
         }
     }
 
-    public function listen(callable $listener, string $exceptionClass = Throwable::class): void
+    public function subscribe(callable $callback, string $exceptionClass = Throwable::class): void
     {
-        $this->listeners->has($exceptionClass) ?: $this->listeners->set($exceptionClass, new Collection('callable'));
+        if (!$this->handlers->has($exceptionClass)) {
+            $this->handlers->set($exceptionClass, new Collection(Type::CALLABLE));
+        }
 
-        /** @var Collection<callable> $exceptionListeners */
-        $exceptionListeners = $this->listeners->get($exceptionClass);
-        $exceptionListeners->contains($listener) ?: $exceptionListeners->add($listener);
+        /**
+         * @var Collection<callable> $exceptionHandlers
+         */
+        $exceptionHandlers = $this->handlers->get($exceptionClass);
+
+        if (!$exceptionHandlers->contains($callback)) {
+            $exceptionHandlers->add($callback);
+        }
     }
 }

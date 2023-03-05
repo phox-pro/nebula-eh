@@ -2,23 +2,23 @@
 
 namespace Phox\Nebula\EH;
 
-use Phox\Nebula\Atom\Implementation\Functions;
-use Phox\Nebula\Atom\Notion\Abstracts\Provider;
-use Phox\Nebula\Atom\Notion\Interfaces\IDependencyInjection;
+use Phox\Nebula\Atom\Implementation\Services\ServiceContainerAccess;
+use Phox\Nebula\Atom\Notion\IProvider;
 use Phox\Nebula\EH\Implementation\ExceptionHandler;
+use Phox\Nebula\EH\Notion\Interfaces\IExceptionHandler;
 use Throwable;
 
-class ExceptionHandlerProvider extends Provider
+class ExceptionHandlerProvider implements IProvider
 {
-    public function __invoke(IDependencyInjection $dependencyInjection): void
+    use ServiceContainerAccess;
+
+    public function register(): void
     {
-        $dependencyInjection->singleton(new ExceptionHandler());
+        $this->container()->singleton(ExceptionHandler::class, IExceptionHandler::class);
 
-        set_exception_handler(function (Throwable $throwable) {
-            $container = Functions::container();
-            $handler = $container->get(ExceptionHandler::class);
-
-            $container->call([$handler, 'execute'], [$throwable]);
-        });
+        set_exception_handler(
+            fn(Throwable $throwable) => $this->container()->get(IExceptionHandler::class)
+                ->execute($throwable)
+        );
     }
 }

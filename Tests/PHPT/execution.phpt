@@ -6,12 +6,14 @@ ExceptionHandler::execute basic test
     require_once 'vendor/autoload.php';
 
     $nebula = new \Phox\Nebula\Atom\Implementation\Application();
-    $nebula->addProvider(new \Phox\Nebula\EH\ExceptionHandlerProvider());
+    $dependencyContainer = \Phox\Nebula\Atom\Implementation\Services\ServiceContainerFacade::instance();
 
-    $handler = \Phox\Nebula\Atom\Implementation\Functions::container()
-        ->get(\Phox\Nebula\EH\Implementation\ExceptionHandler::class);
+    $nebula->run();
 
-    $handler->listen(function (Exception $exception) {
+    $handler = $dependencyContainer
+        ->get(\Phox\Nebula\EH\Notion\Interfaces\IExceptionHandler::class);
+
+    $handler->subscribe(function (Exception $exception) {
         echo $exception->getMessage();
     }, Exception::class);
 

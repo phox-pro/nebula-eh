@@ -6,20 +6,22 @@ ExceptionHandler::execute test with subclasses
     require_once 'vendor/autoload.php';
 
     $nebula = new \Phox\Nebula\Atom\Implementation\Application();
-    $nebula->addProvider(new \Phox\Nebula\EH\ExceptionHandlerProvider());
+    $dependencyContainer = \Phox\Nebula\Atom\Implementation\Services\ServiceContainerFacade::instance();
 
-    $handler = \Phox\Nebula\Atom\Implementation\Functions::container()
-        ->get(\Phox\Nebula\EH\Implementation\ExceptionHandler::class);
+    $nebula->run();
 
-    $handler->listen(function (Throwable $throwable) {
+    $handler = $dependencyContainer
+        ->get(\Phox\Nebula\EH\Notion\Interfaces\IExceptionHandler::class);
+
+    $handler->subscribe(function (Throwable $throwable) {
         echo $throwable->getMessage() . ' from root!';
     });
 
-    $handler->listen(function (LogicException $exception) {
+    $handler->subscribe(function (LogicException $exception) {
         echo $exception->getMessage() . ' from here!';
     }, LogicException::class);
 
-    $handler->listen(function (Exception $exception) {
+    $handler->subscribe(function (Exception $exception) {
         echo $exception->getMessage() . ' from subclass!';
     }, Exception::class);
 
